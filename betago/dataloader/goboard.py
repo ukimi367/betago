@@ -58,7 +58,9 @@ class GoBoard(object):
 
     def is_move_legal(self, color, pos):
         '''Check if a proposed moved is legal.'''
-        return (not self.is_move_on_board(pos)) and not (self.is_move_suicide(color, pos))
+        return (not self.is_move_on_board(pos)) and \
+            (not self.is_move_suicide(color, pos)) and \
+            (not self.is_simple_ko(color, pos))
 
     def create_go_string(self, color, pos):
         ''' Create GoString from current Board and move '''
@@ -129,7 +131,7 @@ class GoBoard(object):
             return
         enemy_string = self.go_strings[enemy_pos]
         if enemy_string is None:
-            raise('check_string is None')
+            raise ValueError('Inconsistency between board and go_strings at %r' % enemy_pos)
 
         # Update adjacent liberties on board
         enemy_string.remove_liberty(our_pos)
@@ -152,7 +154,7 @@ class GoBoard(object):
         pos: Current move as (row, col)
         '''
         if pos in self.board:
-            raise('>>> Error: move ' + str(pos) + 'is already on board.')
+            raise ValueError('Move ' + str(pos) + 'is already on board.')
 
         self.ko_last_move_num_captured = 0
         row, col = pos
@@ -297,3 +299,42 @@ class GoString(object):
     def __str__(self):
         result = "go_string[ stones=" + str(self.stones) + " liberties=" + str(self.liberties) + " ]"
         return result
+
+
+def from_string(board_string):
+    """Build a board from an ascii-art representation.
+
+    'b' for black stones
+    'w' for white stones
+    '.' for empty
+
+    The bottom row is row 0, and the top row is row boardsize - 1. This
+    matches the normal way you'd use board coordinates, with A1 in the
+    bottom-left.
+
+    Rows are separated by newlines. Extra whitespace is ignored.
+    """
+    rows = [line.strip() for line in board_string.strip().split("\n")]
+    boardsize = len(rows)
+    if any(len(row) != boardsize for row in rows):
+        raise ValueError('Board must be square')
+
+    board = GoBoard(boardsize)
+    rows.reverse()
+    for r, row_string in enumerate(rows):
+        for c, point in enumerate(row_string):
+            if point in ('b', 'w'):
+                board.apply_move(point, (r, c))
+    return board
+
+
+def to_string(board):
+    """Make an ascii-art representation of a board."""
+    rows = []
+    for r in range(board.board_size):
+        row = ''
+        for c in range(board.board_size):
+            row += board.board.get((r, c), '.')
+        rows.append(row)
+    rows.reverse()
+    return '\n'.join(rows)

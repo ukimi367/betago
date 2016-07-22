@@ -5,9 +5,28 @@
 
 BetaGo lets you run your own Go engine. It downloads Go games for you, preprocesses them, trains a model on data, for instance a neural network using keras, and serves the trained model to an HTML front end, which you can use to play against your own Go bot.
 
-## It's alive
+## Getting started
+
 Test BetaGo by running the following commands. It should start a playable demo in your browser! This bot plays a reasonable moves, but is still very weak.
-```{python}
+
+### Prerequisites
+
+#### Ubuntu/Debian
+```{bash}
+sudo apt-get install -y python-dev python-pip python-virtualenv gfortran libhdf5-dev pkg-config liblapack-dev libblas-dev
+```
+#### Mac
+On a Mac we recommend using homebrew to install HDF5 first 
+```{bash}
+brew tap homebrew/science
+brew install hdf5
+```
+
+### Installation
+```
+virtualenv .betago
+. .betago/bin/activate
+pip install --upgrade pip setuptools
 pip install betago
 git clone https://github.com/maxpumperla/betago
 cd betago
